@@ -19,7 +19,7 @@
 [CmdletBinding()]
 param()
 
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 
 $GitHubOwner = 'subhasishsahugit'
 $RepoName    = 'windows-app-updater'
@@ -62,8 +62,8 @@ if (-not (Test-Admin)) {
     $tempScript = Join-Path $env:TEMP 'install-windows-app-updater.ps1'
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072
-        Invoke-WebRequest -Uri $ScriptUrl -OutFile $tempScript -UseBasicParsing
-        $proc = Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -PassThru -ArgumentList @(
+        Invoke-WebRequest -Uri $ScriptUrl -OutFile $tempScript -UseBasicParsing -ErrorAction Stop
+        $proc = Start-Process -FilePath 'powershell.exe' -Verb RunAs -Wait -PassThru -ErrorAction Stop -ArgumentList @(
             '-NoProfile',
             '-ExecutionPolicy', 'Bypass',
             '-File', "`"$tempScript`""
@@ -182,7 +182,7 @@ $bashDir = '/' + $InstallDir.Substring(0, 1).ToLowerInvariant() + ($InstallDir.S
 $shortcutArgs = "-h always -t `"Windows App Updater`" -e `"$bashExe`" -lc `"cd '$bashDir' && bash ./update-apps.sh`""
 $desktop = [Environment]::GetFolderPath('Desktop')
 $shortcutPath = Join-Path $desktop 'Update Apps.lnk'
-$shell = New-Object -ComObject WScript.Shell
+$shell = New-Object -ComObject WScript.Shell -ErrorAction Stop
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $mintty
 $shortcut.Arguments = $shortcutArgs
@@ -195,5 +195,5 @@ Write-Ok "Shortcut: $shortcutPath"
 
 # 5. Launch.
 Write-Step 'Starting Windows App Updater'
-Start-Process -FilePath $mintty -ArgumentList $shortcutArgs
+Start-Process -FilePath $mintty -ArgumentList $shortcutArgs -ErrorAction Stop
 Write-Ok 'Done.'
